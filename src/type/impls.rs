@@ -610,7 +610,7 @@ const _: () = {
     struct Vec2([f32; 2]);
 
     #[derive(Type)]
-    #[specta(remote = glam::Vec3, crate = crate, export = false)]
+    #[specta(remote = glam::Vec3, crate = crate, export = true)] // TODO: Temp hardcode export as Vec3 not referenced and thus not exported by defualt
     #[allow(dead_code)]
     struct Vec3([f32; 3]);
 
@@ -725,7 +725,8 @@ impl<L: Type, R: Type> Type for either::Either<L, R> {
 #[cfg(feature = "bevy_ecs")]
 const _: () = {
     #[derive(Type)]
-    #[specta(rename = "bevy_ecs::entity::Entity", remote = bevy_ecs::entity::Entity, crate = crate, export = false)]
+    // https://github.com/oscartbeaumont/specta/issues/161
+    #[specta(remote = bevy_ecs::entity::Entity, crate = crate, export = true)]
     #[allow(dead_code)]
     struct EntityDef(u64);
 };

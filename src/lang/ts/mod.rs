@@ -324,7 +324,11 @@ fn tuple_datatype(ctx: ExportContext, tuple: &TupleType, type_map: &TypeMap) -> 
 
 fn struct_datatype(ctx: ExportContext, key: &str, s: &StructType, type_map: &TypeMap) -> Output {
     match &s.fields {
-        StructFields::Unit => Ok(NULL.into()),
+        StructFields::Unit => Ok(s
+            .tag()
+            .as_ref()
+            .map(|tag| format!("{{ \"{tag}\": \"{key}\" }}"))
+            .unwrap_or_else(|| NULL.into())),
         StructFields::Unnamed(s) => {
             unnamed_fields_datatype(ctx, &skip_fields(s.fields()).collect::<Vec<_>>(), type_map)
         }
@@ -332,11 +336,13 @@ fn struct_datatype(ctx: ExportContext, key: &str, s: &StructType, type_map: &Typ
             let fields = skip_fields_named(s.fields()).collect::<Vec<_>>();
 
             if fields.is_empty() {
-                return Ok(s
-                    .tag()
-                    .as_ref()
-                    .map(|tag| format!("{{ \"{tag}\": \"{key}\" }}"))
-                    .unwrap_or_else(|| format!("Record<{STRING}, {NEVER}>")));
+                // Dirty temp fix until https://github.com/oscartbeaumont/specta/issues/174 got fixed
+                return Ok(String::from("{ /* empty */ }"));
+                // return Ok(s
+                //     .tag()
+                //     .as_ref()
+                //     .map(|tag| format!("{{ \"{tag}\": \"{key}\" }}"))
+                //     .unwrap_or_else(|| format!("Record<{STRING}, {NEVER}>")));
             }
 
             let (flattened, non_flattened): (Vec<_>, Vec<_>) =
